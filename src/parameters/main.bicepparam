@@ -3,7 +3,7 @@ using '../main.bicep'
 param settings = {
   subscriptionId: '<POPULATED>'
   tenantId: '<POPULATED>'
-  demoName: '<TODO>'
+  demoName: 'isaac-demo'
   location: 'eastus'
   githubPat: '<POPULATED>'
   tags: {
@@ -13,21 +13,21 @@ param settings = {
   environmentTypes: [
     {
       name: 'Dev'
-      subscriptionId: '<TODO>'
+      subscriptionId: 'e4476698-fa3e-410b-9b4d-d565e43c7dd1'
       servicePrincipalId: '<POPULATED>'
       appRegistrationId: '<POPULATED>'
       appClientId: '<POPULATED>'
     }
     {
       name: 'Test'
-      subscriptionId: '<TODO>'
+      subscriptionId: 'e4476698-fa3e-410b-9b4d-d565e43c7dd1'
       servicePrincipalId: '<POPULATED>'
       appRegistrationId: '<POPULATED>'
       appClientId: '<POPULATED>'
     }
     {
       name: 'Prod'
-      subscriptionId: '<TODO>'
+      subscriptionId: 'e4476698-fa3e-410b-9b4d-d565e43c7dd1'
       servicePrincipalId: '<POPULATED>'
       appRegistrationId: '<POPULATED>'
       appClientId: '<POPULATED>'
@@ -77,8 +77,8 @@ param settings = {
   ]
   userRoles: [
     {
-      userId: '<TODO>'
-      name: '<TODO>'
+      userId: 'b5e2d09a-b921-4b4f-883b-918cdc46a2b5'
+      name: 'Test DPS'
       roles: [
         'ProjectAdmin'
         'DevBoxUser'
