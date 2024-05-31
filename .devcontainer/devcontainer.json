@@ -1,0 +1,29 @@
+{
+	"image": "mcr.microsoft.com/devcontainers/universal:2",
+	"features": {
+		"ghcr.io/devcontainers/features/powershell:1": {
+			"version": "7.4.1"
+		},
+		"ghcr.io/devcontainers/features/azure-cli:1": {
+			"installBicep": true,
+			"version": "latest"
+		},
+		"ghcr.io/rchaganti/vsc-devcontainer-features/azurebicep:1": {},
+		"ghcr.io/stuartleeks/dev-container-features/azure-cli-persistence:0": {},
+		"ghcr.io/azure/azure-dev/azd:0": {
+			"version": "stable"
+		}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-azuretools.vscode-docker",
+				"ms-vscode.powershell",
+				"ms-vscode.azurecli",
+				"DavidAnson.vscode-markdownlint",
+				"eamodio.gitlens"
+			]
+		}
+	},
+	"postAttachCommand": "docker build -t dps-provision-tool -f Dockerfile ."
+}

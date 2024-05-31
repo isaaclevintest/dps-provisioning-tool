@@ -1,0 +1,22 @@
+# use azure cli image as base image
+#FROM mcr.microsoft.com/azure-cli:latest
+FROM ubuntu:jammy
+
+WORKDIR /
+
+COPY scripts/ /scripts/
+RUN chmod -R +x /scripts/
+
+RUN /scripts/install-pwsh.sh
+
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+
+RUN az extension add --name devcenter --upgrade
+
+RUN az bicep upgrade
+
+RUN curl -fsSL https://aka.ms/install-azd.sh | bash
+
+RUN /scripts/install-gh.sh
+
+RUN apt-get install -y dos2unix

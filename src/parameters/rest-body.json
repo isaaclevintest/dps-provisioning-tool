@@ -1,0 +1,9 @@
+{
+    "name": "",
+    "issuer": "https://token.actions.githubusercontent.com",
+    "subject": "",
+    "description": "{EnvName}",
+    "audiences": [
+        "api://AzureADTokenExchange"
+    ]
+}

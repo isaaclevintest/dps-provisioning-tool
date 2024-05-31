@@ -1,0 +1,17 @@
+---
+services:
+  dps-provision-tool:
+    image: dps-provision-tool
+    container_name: dps-provision-tool
+    environment:
+      # Update to your Azure subscription, service principal, github pat and other details
+      - subscription_id=
+      - app_id=
+      - tenant_id=
+      - sp_secret=
+      - GITHUB_TOKEN=
+      - action=deploy
+      - skip_deployment=false
+    volumes:
+      # Update to your parameters folder path
+      - ./src/parameters/:/src/parameters

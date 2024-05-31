@@ -1,0 +1,85 @@
+name: Delete Developer Productivity Services Environment
+
+on:
+  workflow_dispatch:
+    inputs:
+      Previous-Run-Id:
+        description: Run ID of previous Action. This is used for deleting environments
+        required: true
+        type: string
+
+jobs:
+
+ Delete_Environment:
+
+    env:
+      subscription_id: ${{ secrets.SUBSCRIPTION_ID }}
+      app_id: ${{ secrets.APP_ID }}
+      tenant_id: ${{ secrets.TENANT_ID }}
+      sp_secret: ${{ secrets.SP_SECRET }}
+      GH_PAT: ${{ secrets.GH_TOKEN }}
+      Previous-Run-Id: ${{ github.event.inputs.Previous-Run-Id }}
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Check Repository Secrets
+      if: |
+        env.subscription_id == '' ||
+        env.app_id == '' ||
+        env.tenant_id == '' ||
+        env.sp_secret == '' ||
+        env.GH_PAT == ''
+      run: |
+        echo "Secrets have not been populated, please go to \"settings ==> secrets ==> actions\" to create them"
+        exit 1
+
+    - name: Download Previous Run Parameters
+      uses: actions/download-artifact@v4
+      with:
+        name: parameter-directory
+        path: ./src/parameters/
+        github-token: ${{ env.GH_PAT }}
+        repository: ${{ github.event.repository.full_name }}
+        run-id: ${{ env.Previous-Run-Id }}
+      if: ${{ env.Previous-Run-Id  != '' }}
+
+    - name: Validate GH Token
+      run: |
+        echo "${{ env.GH_PAT }}" > "gh_token.txt"
+        gh auth login --with-token < gh_token.txt
+        gh auth status
+
+    - name: Validate Azure Login
+      uses: azure/login@v2
+      with:
+        creds: '{"clientId":"${{ env.app_id }}","clientSecret":"${{ env.sp_secret }}","subscriptionId":"${{ env.subscription_id }}","tenantId":"${{ env.tenant_id }}"}'
+
+    - name: Validate Azure Subscription
+      run: |
+        az account set --subscription ${{ env.subscription_id }}
+        az account show
+
+    - name: Check Inputs
+      run: |
+        echo "Run-ID: ${{ env.Previous-Run-Id }}"
+
+    - name: Check Parameters File
+      run: |
+        if grep -R "TODO" ./src/parameters/main.bicepparam
+        then
+          echo "Bicep Parameter Not Filled out. Please update all <TODO> fields"
+          exit 1
+        else
+          echo "Parameters file populated"
+        fi
+
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag dps-provision-tool
+
+    - name: Run Docker Container to Delete Environment
+      run: |
+        docker run -i -e subscription_id="${{ env.subscription_id }}" -e app_id="${{ env.app_id }}" -e tenant_id="${{ env.tenant_id }}" \
+        -e sp_secret="${{ env.sp_secret }}" -e GITHUB_TOKEN="${{ env.GH_PAT }}" -e action="delete" -e skip_deployment="false" -e running_in_action="true" \
+        -v  ./src/parameters/:/src/parameters/ dps-provision-tool

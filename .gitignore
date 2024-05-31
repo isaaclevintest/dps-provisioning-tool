@@ -1,0 +1,6 @@
+src/parameters/main.bicepparam
+src/parameters/rest-body-*.json
+src/parameters/main.parameters.json
+src/parameters/main.bicepparam
+docker-compose-*
+docker-compose-isaac.yml
