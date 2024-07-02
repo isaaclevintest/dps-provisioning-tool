@@ -3,7 +3,7 @@ using '../main.bicep'
 param settings = {
   subscriptionId: '<POPULATED>'
   tenantId: '<POPULATED>'
-  demoName: 'isaac-demo'
+  demoName: 'devMarketing'
   location: 'eastus'
   githubPat: '<POPULATED>'
   tags: {
@@ -13,21 +13,21 @@ param settings = {
   environmentTypes: [
     {
       name: 'Dev'
-      subscriptionId: 'e4476698-fa3e-410b-9b4d-d565e43c7dd1'
+      subscriptionId: '7b8baf4b-6488-490d-aa2e-e8c5bf90dbe4'
       servicePrincipalId: '<POPULATED>'
       appRegistrationId: '<POPULATED>'
       appClientId: '<POPULATED>'
     }
     {
       name: 'Test'
-      subscriptionId: 'e4476698-fa3e-410b-9b4d-d565e43c7dd1'
+      subscriptionId: '7b8baf4b-6488-490d-aa2e-e8c5bf90dbe4'
       servicePrincipalId: '<POPULATED>'
       appRegistrationId: '<POPULATED>'
       appClientId: '<POPULATED>'
     }
     {
       name: 'Prod'
-      subscriptionId: 'e4476698-fa3e-410b-9b4d-d565e43c7dd1'
+      subscriptionId: '7b8baf4b-6488-490d-aa2e-e8c5bf90dbe4'
       servicePrincipalId: '<POPULATED>'
       appRegistrationId: '<POPULATED>'
       appClientId: '<POPULATED>'
@@ -77,12 +77,19 @@ param settings = {
   ]
   userRoles: [
     {
-      userId: 'b5e2d09a-b921-4b4f-883b-918cdc46a2b5'
-      name: 'Test DPS'
+      userId: '6d4c7075-5d3c-475b-a2c0-392ee50730a7'
+      name: 'Isaac Levin'
       roles: [
         'ProjectAdmin'
         'DevBoxUser'
         'EnvironmentsUser'
+      ]
+    },
+    {
+      userId: '90cd39f2-7fa1-4369-b591-6355d6e98f20'
+      name: 'Anna Soracco'
+      roles: [
+        'DevBoxUser'
       ]
     }
   ]
