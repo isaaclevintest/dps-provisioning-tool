@@ -84,7 +84,7 @@ param settings = {
         'DevBoxUser'
         'EnvironmentsUser'
       ]
-    },
+    }
     {
       userId: '90cd39f2-7fa1-4369-b591-6355d6e98f20'
       name: 'Anna Soracco'
