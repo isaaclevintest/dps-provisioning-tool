@@ -3,7 +3,7 @@ using '../main.bicep'
 param settings = {
   subscriptionId: '<POPULATED>'
   tenantId: '<POPULATED>'
-  demoName: 'devMarketing'
+  demoName: 'vs-demo'
   location: 'eastus'
   githubPat: '<POPULATED>'
   tags: {
