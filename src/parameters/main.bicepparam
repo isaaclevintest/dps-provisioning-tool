@@ -5,6 +5,8 @@ param settings = {
   tenantId: '<POPULATED>'
   demoName: 'vs-demo'
   location: 'eastus'
+  createDevBox: true
+  createADE: true
   githubPat: '<POPULATED>'
   tags: {
     delete: true
