@@ -48,6 +48,10 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - name: Show Demo Type
+      run: |
+        echo "Create-DevBox: ${{ env.Create-DevBox }}, Create-ADE: ${{ env.Create-ADE }}"
+
     - name: Check Demo Type
       if: |
         env.Create-DevBox == false && env.Create-ADE == false
