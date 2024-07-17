@@ -54,7 +54,7 @@ jobs:
 
     - name: Check Demo Type
       if: |
-        env.Create-DevBox == false && env.Create-ADE == false
+        env.Create-DevBox == 'false' && env.Create-ADE == 'false'
       run: |
         echo "Please ensure either 'Create DevBox' or 'Create ADE' is true"
         exit 1
