@@ -1,6 +1,3 @@
-# use azure cli image as base image
-#FROM mcr.microsoft.com/azure-cli:latest
-#FROM ubuntu:jammy
 FROM isaaclevin/dps-provision-tool-base:latest
 
 WORKDIR /
@@ -14,6 +11,8 @@ ENV GITHUB_TOKEN=""
 ENV action="deploy"
 ENV skip_deployment="false"
 ENV running_in_action="false"
+ENV create_devbox="true"
+ENV create_ade="true"
 
 COPY scripts/ /scripts/
 RUN chmod -R +x /scripts/

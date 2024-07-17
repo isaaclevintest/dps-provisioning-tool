@@ -13,6 +13,10 @@ param description string = ''
 
 param devCenterName string
 
+param createDevBox bool
+
+param createADE bool
+
 param userRoles array
 
 @sys.description('Tags to apply to the resources')
@@ -42,7 +46,7 @@ resource project 'Microsoft.DevCenter/projects@2023-01-01-preview' = {
 // Modules
 // ---------
 
-module readerEnv '../roles/projectRoles.bicep' = [for environmentTypes in environmentTypes: {
+module readerEnv '../roles/projectRoles.bicep' = [for environmentTypes in environmentTypes: if (createADE) {
   name: guid('roles', devCenterName, name, environmentTypes.servicePrincipalId)
   params: {
     principalId: environmentTypes.servicePrincipalId
@@ -61,7 +65,7 @@ module user_Roles '../roles/projectRoles.bicep' = [for user in userRoles: {
   }
 }]
 
-module projectEnvTypes 'projectEnvironmentType.bicep' = [for envType in environmentTypes: {
+module projectEnvTypes 'projectEnvironmentType.bicep' = [for envType in environmentTypes:if (createADE) {
   name: 'env-type-${name}-${envType.name}'
   params: {
     name: envType.name

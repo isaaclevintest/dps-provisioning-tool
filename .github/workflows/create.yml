@@ -3,6 +3,20 @@ name: Create Developer Productivity Services Environment
 on:
   workflow_dispatch:
     inputs:
+      Create-DevBox:
+        required: true
+        type: choice
+        description: 'Are you using this environment to demo Dev Box?'
+        options:
+        - true
+        - false
+      Create-ADE:
+        required: true
+        type: choice
+        description: 'Are you using this environment to demo ADE?'
+        options:
+        - true
+        - false
       Skip-Deployment:
         type: choice
         description: 'Skip Azure Resources Deployment, depends on existing src/parameters/main.parameters.json file'
@@ -25,12 +39,21 @@ jobs:
       sp_secret: ${{ secrets.SP_SECRET }}
       GH_PAT: ${{ secrets.GH_TOKEN }}
 
+      Create-DevBox: ${{ github.event.inputs.Create-DevBox }}
+      Create-ADE: ${{ github.event.inputs.Create-ADE }}
       Previous-Run-Id: ${{ github.event.inputs.Previous-Run-Id }}
       Skip-Deployment: ${{ github.event.inputs.Skip-Deployment }}
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
+
+    - name: Check Demo Type
+      if: |
+        env.Create-DevBox == false && env.Create-ADE == false
+      run: |
+        echo "Please ensure either 'Create DevBox' or 'Create ADE' is true"
+        exit 1
 
     - name: Check Repository Secrets
       if: |
@@ -91,6 +114,7 @@ jobs:
       run: |
         docker run -i -e subscription_id="${{ env.subscription_id }}" -e app_id="${{ env.app_id }}" -e tenant_id="${{ env.tenant_id }}" \
         -e sp_secret="${{ env.sp_secret }}" -e GITHUB_TOKEN="${{ env.GH_PAT }}" -e action="deploy" -e skip_deployment="${{ env.Skip-Deployment }}" \
+        -e create_devbox="${{ env.Create-DevBox }}" -e create_ade="${{ env.Create-ADE }}" \
         -v  ./src/parameters/:/src/parameters/ dps-provision-tool
 
     - uses: actions/upload-artifact@v4

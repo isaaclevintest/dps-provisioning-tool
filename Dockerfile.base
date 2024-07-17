@@ -1,5 +1,3 @@
-# use azure cli image as base image
-#FROM mcr.microsoft.com/azure-cli:latest
 FROM ubuntu:jammy
 
 WORKDIR /

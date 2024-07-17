@@ -9,7 +9,7 @@ param (
 .\scripts\bootstrap.ps1
 
 if ($action -eq "deploy") {
-    .\scripts\deploy.ps1 -skip $skip
+    .\scripts\deploy.ps1
 }
 elseif ($action -eq "delete") {
     .\scripts\delete.ps1

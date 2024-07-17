@@ -17,6 +17,10 @@ param githubPat string
 @description('Tags to apply to the resources')
 param tags object = {}
 
+param createDevBox bool
+
+param createADE bool
+
 param environmentTypes array
 
 param catalog object
@@ -61,7 +65,7 @@ resource customizationsCatalogResource 'Microsoft.DevCenter/devcenters/catalogs@
 }
 
 // create the dev center level environment types
-resource envTypes 'Microsoft.DevCenter/devcenters/environmentTypes@2023-01-01-preview' = [for envType in environmentTypes: {
+resource envTypes 'Microsoft.DevCenter/devcenters/environmentTypes@2023-01-01-preview' = [for envType in environmentTypes: if (createADE) {
   parent: devCenter
   name: envType.name
   properties: {}
@@ -94,7 +98,7 @@ module subscriptionAssignment '../roles/subscriptionRoles.bicep' = {
 }
 
 // assign dev center identity owner role on each environment type subscription
-module envSubscriptionsAssignment '../roles/subscriptionRoles.bicep' = [for envType in environmentTypes: {
+module envSubscriptionsAssignment '../roles/subscriptionRoles.bicep' = [for envType in environmentTypes: if (createADE) {
   name: guid('owner${name}${envType.name}')
   scope: subscription(envType.subscriptionId)
   params: {

@@ -1,6 +1,3 @@
-param (
-    $skip = "false"
-)
 $PSNativeCommandUseErrorActionPreference = $true
 $ErrorActionPreference = 'Stop'
 
@@ -10,79 +7,83 @@ function GetSettings {
     return $settingsJson
 }
 function CreateFederatedCredentials {
-    $settingsJson = GetSettings
-    $RestBodyFileTemplate = Join-Path -Path $pwd -ChildPath "src" | Join-Path -ChildPath "parameters\rest-body.json"
-    $restJsonTemplate = (Get-Content -Path $RestBodyFileTemplate -raw | ConvertFrom-Json)
-    $OrgRepo = $settingsJson.parameters.settings.value.catalog.gitHubOrg + "/eShop"
-    foreach ($environmentType in $settingsJson.parameters.settings.value.environmentTypes) {
-        $JSONFileName = "parameters\rest-body-" + $environmentType.name + ".json"
-        $RestBodyFile = Join-Path -Path $pwd -ChildPath "src" | Join-Path -ChildPath $JSONFileName
-        $restJson = $restJsonTemplate
-        $restJson.name = $settingsJson.parameters.settings.value.demoName + $environmentType.name
-        $restJson.subject = "repo:" + $OrgRepo + ":environment:" + $environmentType.name
-        $restJson.description = $environmentType.name
-        $restJson | ConvertTo-Json -depth 32 | set-content $RestBodyFile
+    if ([System.Convert]::ToBoolean($Env:create_ade)) {
+        $settingsJson = GetSettings
+        $RestBodyFileTemplate = Join-Path -Path $pwd -ChildPath "src" | Join-Path -ChildPath "parameters\rest-body.json"
+        $restJsonTemplate = (Get-Content -Path $RestBodyFileTemplate -raw | ConvertFrom-Json)
+        $OrgRepo = $settingsJson.parameters.settings.value.catalog.gitHubOrg + "/eShop"
+        foreach ($environmentType in $settingsJson.parameters.settings.value.environmentTypes) {
+            $JSONFileName = "parameters\rest-body-" + $environmentType.name + ".json"
+            $RestBodyFile = Join-Path -Path $pwd -ChildPath "src" | Join-Path -ChildPath $JSONFileName
+            $restJson = $restJsonTemplate
+            $restJson.name = $settingsJson.parameters.settings.value.demoName + $environmentType.name
+            $restJson.subject = "repo:" + $OrgRepo + ":environment:" + $environmentType.name
+            $restJson.description = $environmentType.name
+            $restJson | ConvertTo-Json -depth 32 | set-content $RestBodyFile
 
-        $registration = $environmentType.appRegistrationId
-        $URI = "https://graph.microsoft.com/beta/applications/$registration/federatedIdentityCredentials"
-        # check to see if federated credentials already exist in Azure
-        $fedCreds = az rest --method GET --uri $URI | ConvertFrom-Json
-        if ($null -ne $fedCreds.value.name) {
-            Write-Host "==> Federated Identity for $($settingsJson.parameters.settings.value.demoName)$($environmentType.name) already exists"
-            continue
+            $registration = $environmentType.appRegistrationId
+            $URI = "https://graph.microsoft.com/beta/applications/$registration/federatedIdentityCredentials"
+            # check to see if federated credentials already exist in Azure
+            $fedCreds = az rest --method GET --uri $URI | ConvertFrom-Json
+            if ($null -ne $fedCreds.value.name) {
+                Write-Host "==> Federated Identity for $($settingsJson.parameters.settings.value.demoName)$($environmentType.name) already exists"
+                continue
+            }
+            $fedCreds = az rest --method POST --uri $URI  --body "@$RestBodyFile"
+            Write-Host "==> Created Federated Identity for $($settingsJson.parameters.settings.value.demoName)$($environmentType.name)"
         }
-        $fedCreds = az rest --method POST --uri $URI  --body "@$RestBodyFile"
-        Write-Host "==> Created Federated Identity for $($settingsJson.parameters.settings.value.demoName)$($environmentType.name)"
     }
 }
 
 function PopulateGitHubRepo {
-    $settingsJson = GetSettings
-    $OrgRepo = $settingsJson.parameters.settings.value.catalog.gitHubOrg + "/eShop"
+    if ([System.Convert]::ToBoolean($Env:create_ade)) {
+        $settingsJson = GetSettings
+        $OrgRepo = $settingsJson.parameters.settings.value.catalog.gitHubOrg + "/eShop"
 
-    Write-Host ""
-    Write-Host "==> Adding these items to GitHub Repository Variables using GitHub CLI"
-    Write-Host "   ==> AZURE_DEVCENTER	        Set to: $($settingsJson.parameters.settings.value.demoName.Trim())-devcenter"
-    Write-Host "   ==> AZURE_PROJECT	        Set to: $($settingsJson.parameters.settings.value.demoName.Trim())-project"
-    Write-Host "   ==> AZURE_CATALOG	        Set to: $($settingsJson.parameters.settings.value.catalog.name)"
-    Write-Host "   ==> AZURE_CATALOG_ITEM       Set to: $($settingsJson.parameters.settings.value.catalog.catalogItem)"
-    Write-Host "   ==> AZURE_SUBSCRIPTION_ID    Set to: $($settingsJson.parameters.settings.value.subscriptionId)"
-    Write-Host "   ==> AZURE_TENANT_ID	        Set to: $($settingsJson.parameters.settings.value.tenantId)"
-
-    $repo_variables = $( gh variable list -R "$OrgRepo" )
-
-    Write-Host ""
-    gh variable set -R "$OrgRepo" AZURE_DEVCENTER -b "$($settingsJson.parameters.settings.value.demoName.Trim())-devcenter"
-    gh variable set -R "$OrgRepo" AZURE_PROJECT -b "$($settingsJson.parameters.settings.value.demoName.Trim())-project"
-    gh variable set -R "$OrgRepo" AZURE_CATALOG -b "$($settingsJson.parameters.settings.value.catalog.name)"
-    gh variable set -R "$OrgRepo" AZURE_CATALOG_ITEM -b "$($settingsJson.parameters.settings.value.catalog.catalogItem)"
-    gh variable set -R "$OrgRepo" AZURE_TENANT_ID -b "$($settingsJson.parameters.settings.value.tenantId)"
-    gh variable set -R "$OrgRepo" AZURE_SUBSCRIPTION_ID -b "$($settingsJson.parameters.settings.value.subscriptionId)"
-
-    Write-Host "Checking if Repo contains variable 'AZURE_CLIENT_ID' (not allowed)"
-
-    if ($repo_variables -like "*AZURE_CLIENT_ID*") {
-        Write-Host "ERROR: Repository should not have a variable 'AZURE_CLIENT_ID'"
-        Exit 1
-    }
-    else {
-        Write-Host "Repository does not contain variable 'AZURE_CLIENT_ID'"
-    }
-
-    foreach ($environmentType in $settingsJson.parameters.settings.value.environmentTypes) {
         Write-Host ""
-        Write-Host "Ensuring Repository Environment '$($environmentType.name)' exists"
-        gh api -X PUT "/repos/$OrgRepo/environments/$($environmentType.name)" --silent
+        Write-Host "==> Adding these items to GitHub Repository Variables using GitHub CLI"
+        Write-Host "   ==> AZURE_DEVCENTER	        Set to: $($settingsJson.parameters.settings.value.demoName.Trim())-devcenter"
+        Write-Host "   ==> AZURE_PROJECT	        Set to: $($settingsJson.parameters.settings.value.demoName.Trim())-project"
+        Write-Host "   ==> AZURE_CATALOG	        Set to: $($settingsJson.parameters.settings.value.catalog.name)"
+        Write-Host "   ==> AZURE_CATALOG_ITEM       Set to: $($settingsJson.parameters.settings.value.catalog.catalogItem)"
+        Write-Host "   ==> AZURE_SUBSCRIPTION_ID    Set to: $($settingsJson.parameters.settings.value.subscriptionId)"
+        Write-Host "   ==> AZURE_TENANT_ID	        Set to: $($settingsJson.parameters.settings.value.tenantId)"
 
-        if ($environmentType.name -eq "Prod") {
-            Write-Host "Add protection rules to Prod Environment"
-            $GHRulesFile = Join-Path -Path $pwd -ChildPath "scripts" | Join-Path -ChildPath "gh-prod-rules-api-body.json"
-            #use github cli to protect the main branch
-            $gh = gh api -X PUT "/repos/$OrgRepo/environments/Prod" --input $GHRulesFile --verbose
+        $repo_variables = $( gh variable list -R "$OrgRepo" )
+
+        Write-Host ""
+        gh variable set -R "$OrgRepo" AZURE_DEVCENTER -b "$($settingsJson.parameters.settings.value.demoName.Trim())-devcenter"
+        gh variable set -R "$OrgRepo" AZURE_PROJECT -b "$($settingsJson.parameters.settings.value.demoName.Trim())-project"
+        gh variable set -R "$OrgRepo" AZURE_CATALOG -b "$($settingsJson.parameters.settings.value.catalog.name)"
+        gh variable set -R "$OrgRepo" AZURE_CATALOG_ITEM -b "$($settingsJson.parameters.settings.value.catalog.catalogItem)"
+        gh variable set -R "$OrgRepo" AZURE_TENANT_ID -b "$($settingsJson.parameters.settings.value.tenantId)"
+        gh variable set -R "$OrgRepo" AZURE_SUBSCRIPTION_ID -b "$($settingsJson.parameters.settings.value.subscriptionId)"
+
+        Write-Host "Checking if Repo contains variable 'AZURE_CLIENT_ID' (not allowed)"
+
+        if ($repo_variables -like "*AZURE_CLIENT_ID*") {
+            Write-Host "ERROR: Repository should not have a variable 'AZURE_CLIENT_ID'"
+            Exit 1
+        }
+        else {
+            Write-Host "Repository does not contain variable 'AZURE_CLIENT_ID'"
         }
 
-        Write-Host "Saving secret to Repository for Environment '$($environmentType.name)'"
-        gh secret set AZURE_CLIENT_ID -R "$OrgRepo" -b "$($environmentType.appClientId)" --env "$($environmentType.name)"
+        foreach ($environmentType in $settingsJson.parameters.settings.value.environmentTypes) {
+            Write-Host ""
+            Write-Host "Ensuring Repository Environment '$($environmentType.name)' exists"
+            gh api -X PUT "/repos/$OrgRepo/environments/$($environmentType.name)" --silent
+
+            if ($environmentType.name -eq "Prod") {
+                Write-Host "Add protection rules to Prod Environment"
+                $GHRulesFile = Join-Path -Path $pwd -ChildPath "scripts" | Join-Path -ChildPath "gh-prod-rules-api-body.json"
+                #use github cli to protect the main branch
+                $gh = gh api -X PUT "/repos/$OrgRepo/environments/Prod" --input $GHRulesFile --verbose
+            }
+
+            Write-Host "Saving secret to Repository for Environment '$($environmentType.name)'"
+            gh secret set AZURE_CLIENT_ID -R "$OrgRepo" -b "$($environmentType.appClientId)" --env "$($environmentType.name)"
+        }
     }
 }
 
@@ -93,7 +94,7 @@ Write-Host "MICROSOFT DEVBOX AND AZURE DEPLOYMENT ENVIRONMENTS DEMO GENERATOR"
 Write-Host "---------------------------------------------------------"
 Write-Host ""
 
-if ($skip -eq "false") {
+if ($Env:skip_deployment -eq "false") {
 
     Write-Host ""
     Write-Host "==> Gathering Azure Tenant and Subscription Data..."
@@ -191,6 +192,8 @@ if ($skip -eq "false") {
     $settingsJson.parameters.settings.value.tenantId = $AZURE_TENANT_ID
     $settingsJson.parameters.settings.value.tags.envname = $settingsJson.parameters.settings.value.demoName
     $settingsJson.parameters.settings.value.catalog.gitHubOrg = $Env:Org
+    $settingsJson.parameters.settings.value.createDevBox = [System.Convert]::ToBoolean($Env:create_devbox)
+    $settingsJson.parameters.settings.value.createADE = [System.Convert]::ToBoolean($Env:create_ade)
 
     Write-Host ""
     $settingsJson | ConvertTo-Json -depth 32 | set-content $ParameterFile
@@ -252,8 +255,7 @@ else {
 
     $ParameterFile = Join-Path -Path $pwd -ChildPath "src" | Join-Path -ChildPath "parameters\main.parameters.json"
 
-    if (Test-Path $ParameterFile)
-    {
+    if (Test-Path $ParameterFile) {
         CreateFederatedCredentials
 
         PopulateGitHubRepo
@@ -262,8 +264,7 @@ else {
         Write-Host ""
         Write-Host "Your environment is ready to use! Please follow the instructions in the README.md file to complete the setup."
     }
-    else
-    {
+    else {
         Write-Host "No parameters file found. File is needed to continue. Exiting..."
         Write-Host ""
         Write-Host ""

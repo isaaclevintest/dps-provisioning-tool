@@ -3,7 +3,7 @@
 pwsh ./scripts/bootstrap.ps1
 
 if [ "$action" = "deploy" ]; then
-    pwsh ./scripts/deploy.ps1 -skip $skip_deployment
+    pwsh ./scripts/deploy.ps1
 elif [ "$action" = "delete" ]; then
     pwsh ./scripts/delete.ps1
 else
