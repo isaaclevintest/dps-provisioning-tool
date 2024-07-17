@@ -17,10 +17,8 @@ if (Test-Path $ParameterFile) {
 
     $devCententerRGs = az group list --query "[?tags.delete == 'True' && tags.envname == '$envName' && contains(name,'devcenter')].{name:name}" -o tsv;
 
-    foreach ($rg in $devCententerRGs)
-    {
-        if ($(az group exists --name $rg) -eq "true")
-        {
+    foreach ($rg in $devCententerRGs) {
+        if ($(az group exists --name $rg) -eq "true") {
             $kvs = az keyvault list --resource-group $rg --query "[].{name:name}" -o tsv;
             foreach ($kv in $kvs) {
                 Write-Host "   ==> Deleting and Purging Keyvault $kv in $rg"
@@ -35,10 +33,8 @@ if (Test-Path $ParameterFile) {
     Write-Host "==> Getting Remaining Resource Groups"
     $rgGroups = az group list --query "[?tags.delete == 'True' && tags.envname == '$envName'].{name:name}" -o tsv;
 
-    foreach ($rg in $rgGroups)
-    {
-        if ($(az group exists --name $rg) -eq "true")
-        {
+    foreach ($rg in $rgGroups) {
+        if ($(az group exists --name $rg) -eq "true") {
             $kvs = az keyvault list --resource-group $rg --query "[].{name:name}" -o tsv;
             foreach ($kv in $kvs) {
                 Write-Host "   ==> Deleting and Purging Keyvault $kv in $rg"
@@ -69,10 +65,8 @@ if (Test-Path $ParameterFile) {
         $JSONFileName = "parameters\rest-body-" + $environmentType.name + ".json"
         $RestBodyFile = Join-Path -Path $pwd -ChildPath "src" | Join-Path -ChildPath $JSONFileName
 
-        if ($Env:running_in_action -eq "false")
-        {
-            if (Test-Path $RestBodyFile)
-            {
+        if ($Env:running_in_action -eq "false") {
+            if (Test-Path $RestBodyFile) {
                 Write-Host "   ==> Deleting $($environmentType.name) Federated Credential File"
                 Remove-Item $RestBodyFile
             }
@@ -84,8 +78,7 @@ if (Test-Path $ParameterFile) {
 
     $eShopForkExists = gh api "/repos/$OrgRepo" | ConvertFrom-Json
 
-    if ($null -ne $eShopForkExists.id)
-    {
+    if ($null -ne $eShopForkExists.id) {
         $repo_variables = $( gh variable list -R "$OrgRepo" )
 
         if ($repo_variables -like "*AZURE_DEVCENTER*") {
@@ -115,18 +108,21 @@ if (Test-Path $ParameterFile) {
         Write-Host ""
         Write-Host "==> Deleting GitHub Repository Environments"
         foreach ($environmentType in $settingsJson.parameters.settings.value.environmentTypes) {
-            $envExists = gh api "/repos/$OrgRepo/environments/$($environmentType.name)" | ConvertFrom-Json
-            if ($null -ne $envExists.id)
-            {
-                Write-Host "   ==> Deleting Repository Environment '$($environmentType.name)'"
-                gh api -X DELETE "/repos/$OrgRepo/environments/$($environmentType.name)" --silent
+            try {
+                $envExists = gh api "/repos/$OrgRepo/environments/$($environmentType.name)" | ConvertFrom-Json
+                if ($null -ne $envExists.id) {
+                    Write-Host "   ==> Deleting Repository Environment '$($environmentType.name)'"
+                    gh api -X DELETE "/repos/$OrgRepo/environments/$($environmentType.name)" --silent
+                }
+            }
+            catch {
+                "Unable to download MyDoc.doc from http://www.contoso.com."
             }
         }
     }
     Write-Host ""
     Write-Host "==> Deleting temporary parameters file..."
-    if ($Env:running_in_action -eq "false")
-    {
+    if ($Env:running_in_action -eq "false") {
         Remove-Item $ParameterFile
     }
 

@@ -180,20 +180,19 @@ if ($Env:skip_deployment -eq "false") {
         }
     }
 
-    $Env:Org = gh api /user | ConvertFrom-Json | Select-Object -ExpandProperty login
-    Write-Host ""
-    Write-Host "==> Adding Values to main.parameters.json file..."
-    Write-Host "   ==> Azure Subscription ID:   $AZURE_SUBSCRIPTION_ID"
-    Write-Host "   ==> Azure Tenant Id:         $AZURE_TENANT_ID"
-    Write-Host "   ==> GitHub User:             $($Env:Org)"
-
-
     $settingsJson.parameters.settings.value.subscriptionId = $AZURE_SUBSCRIPTION_ID
     $settingsJson.parameters.settings.value.tenantId = $AZURE_TENANT_ID
     $settingsJson.parameters.settings.value.tags.envname = $settingsJson.parameters.settings.value.demoName
     $settingsJson.parameters.settings.value.catalog.gitHubOrg = $Env:Org
     $settingsJson.parameters.settings.value.createDevBox = [System.Convert]::ToBoolean($Env:create_devbox)
     $settingsJson.parameters.settings.value.createADE = [System.Convert]::ToBoolean($Env:create_ade)
+
+    $Env:Org = gh api /user | ConvertFrom-Json | Select-Object -ExpandProperty login
+    Write-Host ""
+    Write-Host "==> Adding Values to main.parameters.json file..."
+    Write-Host "   ==> Azure Subscription ID:   $(settingsJson.parameters.settings.value.subscriptionId)"
+    Write-Host "   ==> Azure Tenant Id:         $($settingsJson.parameters.settings.value.tenantId)"
+    Write-Host "   ==> GitHub User:             $($Env:Org)"
 
     Write-Host ""
     $settingsJson | ConvertTo-Json -depth 32 | set-content $ParameterFile
@@ -221,7 +220,7 @@ if ($Env:skip_deployment -eq "false") {
                 --template-file "$BicepMainFile" `
                 --parameters "$ParameterFile" --no-wait
 
-            Write-Host "==> Azure Deployment Started: https://portal.azure.com/#view/HubsExtension/DeploymentDetailsBlade/~/overview/id/%2Fsubscriptions%2F$AZURE_SUBSCRIPTION_ID%2Fproviders%2FMicrosoft.Resources%2Fdeployments%2F$DEPLOYMENT_NAME"
+            Write-Host "==> Azure Deployment Started: https://portal.azure.com/#view/HubsExtension/DeploymentDetailsBlade/~/overview/id/%2Fsubscriptions%2F$($settingsJson.parameters.settings.value.tenantId)%2Fproviders%2FMicrosoft.Resources%2Fdeployments%2F$DEPLOYMENT_NAME"
             $dep = az deployment sub wait --created --name $DEPLOYMENT_NAME
             Write-Host ""
             Write-Host "==> Azure Deployment Complete"
