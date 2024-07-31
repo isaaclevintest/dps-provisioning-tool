@@ -190,7 +190,7 @@ if ($Env:skip_deployment -eq "false") {
     $Env:Org = gh api /user | ConvertFrom-Json | Select-Object -ExpandProperty login
     Write-Host ""
     Write-Host "==> Adding Values to main.parameters.json file..."
-    Write-Host "   ==> Azure Subscription ID:   $(settingsJson.parameters.settings.value.subscriptionId)"
+    Write-Host "   ==> Azure Subscription ID:   $($settingsJson.parameters.settings.value.subscriptionId)"
     Write-Host "   ==> Azure Tenant Id:         $($settingsJson.parameters.settings.value.tenantId)"
     Write-Host "   ==> GitHub User:             $($Env:Org)"
 
