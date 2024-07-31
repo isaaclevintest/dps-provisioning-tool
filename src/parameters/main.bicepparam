@@ -3,7 +3,7 @@ using '../main.bicep'
 param settings = {
   subscriptionId: '<POPULATED>'
   tenantId: '<POPULATED>'
-  demoName: 'isaac-demo'
+  demoName: 'isaac-devbox'
   location: 'eastus'
   createDevBox: true
   createADE: true
