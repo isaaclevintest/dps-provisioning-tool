@@ -180,6 +180,8 @@ if ($Env:skip_deployment -eq "false") {
         }
     }
 
+    $Env:Org = gh api /user | ConvertFrom-Json | Select-Object -ExpandProperty login
+
     $settingsJson.parameters.settings.value.subscriptionId = $AZURE_SUBSCRIPTION_ID
     $settingsJson.parameters.settings.value.tenantId = $AZURE_TENANT_ID
     $settingsJson.parameters.settings.value.tags.envname = $settingsJson.parameters.settings.value.demoName
@@ -187,7 +189,6 @@ if ($Env:skip_deployment -eq "false") {
     $settingsJson.parameters.settings.value.createDevBox = [System.Convert]::ToBoolean($Env:create_devbox)
     $settingsJson.parameters.settings.value.createADE = [System.Convert]::ToBoolean($Env:create_ade)
 
-    $Env:Org = gh api /user | ConvertFrom-Json | Select-Object -ExpandProperty login
     Write-Host ""
     Write-Host "==> Adding Values to main.parameters.json file..."
     Write-Host "   ==> Azure Subscription ID:   $($settingsJson.parameters.settings.value.subscriptionId)"
