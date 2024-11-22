@@ -15,21 +15,21 @@ param settings = {
   environmentTypes: [
     {
       name: 'Dev'
-      subscriptionId: '7b8baf4b-6488-490d-aa2e-e8c5bf90dbe4'
+      subscriptionId: 'aa620457-dad1-4bff-abbd-7f10455b7cf6'
       servicePrincipalId: '<POPULATED>'
       appRegistrationId: '<POPULATED>'
       appClientId: '<POPULATED>'
     }
     {
       name: 'Test'
-      subscriptionId: '7b8baf4b-6488-490d-aa2e-e8c5bf90dbe4'
+      subscriptionId: 'aa620457-dad1-4bff-abbd-7f10455b7cf6'
       servicePrincipalId: '<POPULATED>'
       appRegistrationId: '<POPULATED>'
       appClientId: '<POPULATED>'
     }
     {
       name: 'Prod'
-      subscriptionId: '7b8baf4b-6488-490d-aa2e-e8c5bf90dbe4'
+      subscriptionId: 'aa620457-dad1-4bff-abbd-7f10455b7cf6'
       servicePrincipalId: '<POPULATED>'
       appRegistrationId: '<POPULATED>'
       appClientId: '<POPULATED>'
@@ -79,19 +79,12 @@ param settings = {
   ]
   userRoles: [
     {
-      userId: '6d4c7075-5d3c-475b-a2c0-392ee50730a7'
+      userId: '318abfb1-368f-4e42-8eb2-c1f13fa06729'
       name: 'Isaac Levin'
       roles: [
         'ProjectAdmin'
         'DevBoxUser'
         'EnvironmentsUser'
-      ]
-    }
-    {
-      userId: '90cd39f2-7fa1-4369-b591-6355d6e98f20'
-      name: 'Anna Soracco'
-      roles: [
-        'DevBoxUser'
       ]
     }
   ]
