@@ -24,7 +24,7 @@ param tags object = {}
 // clean up the keyvault name an add a suffix to ensure it's unique
 var keyVaultNameStart = replace(replace(replace(toLower(trim(name)), ' ', '-'), '_', '-'), '.', '-')
 var keyVaultNameAlmost = length(keyVaultNameStart) <= 24 ? keyVaultNameStart : take(keyVaultNameStart, 24)
-var unique = uniqueString(resourceGroup().id)
+var unique = substring(uniqueString(resourceGroup().id), 1, 3)
 var keyVaultName = '${keyVaultNameAlmost}-${unique}-kv'
 
 // ---------
